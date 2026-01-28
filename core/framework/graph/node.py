@@ -202,7 +202,7 @@ class NodeSpec(BaseModel):
     )
 
     # Retry behavior
-    max_retries: int = Field(default=3)
+    max_retries: int | None= Field(default=None)                                                                                                                                                        
     retry_on: list[str] = Field(default_factory=list, description="Error types to retry on")
 
     # Pydantic model for output validation

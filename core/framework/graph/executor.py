@@ -1,4 +1,4 @@
-"""
+                                                                                                        """
 Graph Executor - Runs agent graphs.
 
 The executor:
@@ -360,10 +360,13 @@ class GraphExecutor:
                         node_retry_counts.get(current_node_id, 0) + 1
                     )
 
-                    # [CORRECTED] Use node_spec.max_retries instead of hardcoded 3
-                    max_retries = getattr(node_spec, "max_retries", 3)
+                    # Resolve max_retries: Node > Graph > Default (handled by GraphSpec default)
+                    max_retries = node_spec.max_retries
+                    if max_retries is None:
+                        max_retries = graph.max_retries_per_node
 
                     if node_retry_counts[current_node_id] < max_retries:
+
                         # Retry - don't increment steps for retries
                         steps -= 1
 
@@ -875,8 +878,15 @@ class GraphExecutor:
                     await memory.write_async(key, value)
 
                 # Execute with retries
+                # Execute with retries
                 last_result = None
-                for attempt in range(node_spec.max_retries):
+                
+                # Resolve max_retries hierarchy
+                max_retries = node_spec.max_retries
+                if max_retries is None:
+                    max_retries = graph.max_retries_per_node
+
+                for attempt in range(max_retries):
                     branch.retry_count = attempt
 
                     # Build context for this branch
